@@ -116,8 +116,76 @@ abstract class AbstractCollection implements CollectionInterface
 
     function filter(callable $filter):CollectionInterface
     {
-
+        return
+            new Collection(
+                array_filter($this->items, $filter),
+            );
     }
+    public function find(CollectionItemInterface $collectionItem):?CollectionItemInterface
+    {
+        return
+            array_filter(
+                $this->items,
+                fn($item) => $item->getObjectId() === $collectionItem->getObjectId()
+            )[0] ?? null;
+    }
+
+    function findByKey(mixed $key, bool $strict=false): CollectionInterface
+    {
+        return
+            new Collection(
+                array_filter(
+                    $this->items,
+                    function($item) use ($key,$strict) {
+                        return $strict
+                            ? $item->getKey() === $key
+                            : $item->getKey() == $key;
+                    }
+                )
+            );
+    }
+
+    function findByKeyType(string $keyType): CollectionInterface
+    {
+        return
+            new Collection(
+                array_filter(
+                    $this->items,
+                    function($item) use ($keyType) {
+                        $item->getKeyType() === $keyType;
+                    }
+                )
+            );
+    }
+
+    function findByValue(mixed $value, bool $strict=false): CollectionInterface
+    {
+        return
+            new Collection(
+                array_filter(
+                    $this->items,
+                    function($item) use ($value,$strict) {
+                        return $strict
+                            ? $item->getValue() === $value
+                            : $item->getValue() == $value;
+                    }
+                )
+            );
+    }
+
+    function findByValueType(string $valueType): CollectionInterface
+    {
+        return
+            new Collection(
+                array_filter(
+                    $this->items,
+                    function($item) use ($valueType) {
+                        $item->getValueType() === $valueType;
+                    }
+                )
+            );
+    }
+
 
     function first(): CollectionItemInterface
     {

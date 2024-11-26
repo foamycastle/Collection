@@ -46,11 +46,41 @@ interface CollectionInterface extends \Iterator, \Countable, \ArrayAccess
     function last(): CollectionItemInterface;
 
     /**
-     * Verify a collection contains a key.
-     * @param mixed $key The key to verify
-     * @return bool TRUE if key exists in collection
+     * Find a collection item by its object ID
+     * @param CollectionItemInterface $collectionItem
+     * @return CollectionItemInterface|null
      */
-    function hasKey(mixed $key): bool;
+    function find(CollectionItemInterface $collectionItem): ?CollectionItemInterface;
+
+    /**
+     * Find many items by their key's data
+     * @param mixed $key the key data
+     * @param bool $strict if true, the data type must match
+     * @return CollectionInterface
+     */
+    function findByKey(mixed $key, bool $strict=false): CollectionInterface;
+
+    /**
+     * Find many items by the key's data type
+     * @param string|class-string $keyType the key's data type
+     * @return CollectionInterface
+     */
+    function findByKeyType(string $keyType): CollectionInterface;
+
+    /**
+     * Find many items by the value's data
+     * @param mixed $value
+     * @param bool $strict if true, the value's data type must match
+     * @return CollectionInterface
+     */
+    function findByValue(mixed $value, bool $strict=false): CollectionInterface;
+
+    /**
+     * Find many items by the value's data type
+     * @param string|class-string $valueType the value's data type
+     * @return CollectionInterface
+     */
+    function findByValueType(string $valueType): CollectionInterface;
 
     /**
      * Reduce a collection to only the items that cause the callable to return true
