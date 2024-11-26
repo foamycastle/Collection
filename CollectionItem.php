@@ -4,8 +4,10 @@ namespace Foamycastle\Collection;
 
 class CollectionItem implements CollectionItemInterface
 {
+    private string $objectId;
     public function __construct(private mixed $key, private mixed $value)
     {
+        $this->objectId = uniqid(random_bytes(4),true);
     }
 
     function getKey(): mixed
@@ -45,6 +47,12 @@ class CollectionItem implements CollectionItemInterface
         }
         return gettype($this->value);
     }
+
+    public function getObjectId(): string
+    {
+        return $this->objectId;
+    }
+
     public function tuple(): array
     {
         return [$this->key,$this->value];
