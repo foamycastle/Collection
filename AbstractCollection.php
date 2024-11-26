@@ -62,6 +62,57 @@ abstract class AbstractCollection implements CollectionInterface
         return $newCollection;
     }
 
+    public function offsetExists(mixed $offset): bool
+    {
+        if($offset instanceof CollectionItem) {
+            $offset = $offset->getKey();
+        }
+        return $this->findByKey($offset)->count() > 0;
+    }
+
+    public function offsetGet(mixed $offset): ?CollectionItemInterface
+    {
+        if($offset instanceof CollectionItem) {
+            return $this->find($offset);
+        }
+        //return the first item of this collection
+        $found=$this->findByKey($offset,true);
+
+        return $found->count() > 0
+            ? $found[0]
+            : null;
+
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if(empty($offset) && $value instanceof CollectionItem) {
+            $this->items[] = $value;
+            return;
+        }
+        if($offset instanceof CollectionItem) {
+            $found=$this->find($offset);
+            if($found!==null) {
+                $found->setValue($value);
+            }
+            return;
+        }
+        if(is_scalar($offset)) {
+            $found=$this->findByKey($offset);
+            if($found->count()>0) {
+                foreach ($found as $item) {
+                    $item->setValue($value);
+                }
+            }
+        }
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        unset($this->items[$offset]);
+    }
+
+
     function append(mixed $key, mixed $value): CollectionInterface
     {
         $this->items[] = new CollectionItem($key, $value);
