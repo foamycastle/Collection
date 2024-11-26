@@ -4,23 +4,6 @@ namespace Foamycastle\Collection;
 
 interface CollectionInterface extends \Iterator, \Countable, \ArrayAccess
 {
-    /**
-     * Set the data with the key matches
-     * @param mixed $whereKey the key to find and match
-     * @param mixed $value The value to place where key matches
-     * @param bool $strict if TRUE, the key must be of the same type
-     * @return  self
-     */
-    function setDataWhereKey(mixed $whereKey, mixed $value, bool $strict = false): self;
-
-    /**
-     * Sets the key where data matches
-     * @param mixed $key The key to place in the collection
-     * @param mixed $whereValue The value to find and match
-     * @param bool $strict if TRUE, the value must be of the same type
-     * @return  self
-     */
-    function setKeyWhereData(mixed $key, mixed $whereValue, bool $strict = false): self;
 
     /**
      * Append a value to the collection
@@ -70,21 +53,13 @@ interface CollectionInterface extends \Iterator, \Countable, \ArrayAccess
     function hasKey(mixed $key): bool;
 
     /**
-     * Identify collection items whose data match the supplied criteria.  Comparison between items and criteria are strict.
-     * @param mixed $data The data to match
-     * @param mixed|null $key Optional.  If the key is also supplied, both the data and the key must match on a strict type basis
-     * @return self A new collection is returned with the matching results
+     * Reduce a collection to only the items that cause the callable to return true
+     * @param callable $filter Callback is given the CollectionItemInterface and expected to return a boolean.
+     * When the callback returns true, the CollectionItem is returned in the resulting Collection.  If the callback
+     * returns false, that item is not included in the resulting collection
+     * @return self
      */
-    function findDataWhere(mixed $data, mixed $key = null): self;
-
-    /**
-     * Identify collection items whose key match the supplied criteria.  Comparison between items and criteria are strict.
-     * @param mixed $key the key to find and match
-     * @param mixed|null $data Optional.  If the data argument is also supplied, both the key and the data must match on a strict type basis
-     * @return self A new collection is returned with the matching results
-     */
-    function findKeysWhere(mixed $key, mixed $data = null): self;
-
+    function filter(callable $filter):self;
 
 
 

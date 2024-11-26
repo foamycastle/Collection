@@ -15,8 +15,6 @@ abstract class AbstractCollection implements CollectionInterface
 
     /**
      * Create a collection from separate key and value arrays
-     * @param list<mixed> $keys
-     * @param list<mixed> $data
      * @return CollectionInterface
      */
     static function New():CollectionInterface
@@ -53,6 +51,18 @@ abstract class AbstractCollection implements CollectionInterface
         return $newCollection;
     }
 
+    /**
+     * Create a collection from an established list of collection items.  Used exclusively for mutation.
+     * @param CollectionItemInterface[] $items
+     * @return CollectionInterface
+     */
+    protected static function FromCollectionItems(array $items): CollectionInterface
+    {
+        $newCollection = new static();
+        $newCollection->items = $items;
+        return $newCollection;
+    }
+
     function append(mixed $key, mixed $value): CollectionInterface
     {
         $this->items[] = new CollectionItem($key, $value);
@@ -73,69 +83,6 @@ abstract class AbstractCollection implements CollectionInterface
     public function shift(): CollectionItemInterface
     {
         return array_shift($this->items);
-    }
-
-    public function offsetExists(mixed $offset): bool
-    {
-        if (is_int($offset)) {
-            return isset($this->items[$offset]);
-        }
-        return !empty(
-        array_filter($this->items, function ($item) use ($offset) {
-            return $item->getKey() === $offset;
-        })
-        );
-    }
-
-    /**
-     * Returns a collection of matching keys
-     * @param mixed $offset
-     * @return CollectionInterface
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        if(is_string($offset)) {
-            if($this->hasKey($offset)){
-                return $this->findKeysWhere($offset)->first()->getValue();
-            }
-        }
-        return $this->findKeysWhere($offset);
-    }
-
-    /**
-     * Reduces the collection to a list of items that match based on the given criteria
-     * @param mixed $key Items are matched primarily on this value. Comparison is strict.
-     * @param mixed|null $data If provided, both `$key` and this value must match.  As with `$key`, comparison is also strict.
-     * @return CollectionInterface
-     */
-    public function findKeysWhere(mixed $key, mixed $data = null): self
-    {
-        return self::FromCollectionItems(
-            array_filter(
-                $this->items,
-                function ($item) use ($key, $data) {
-                    return $data !== null
-                        ? ($key === $item->getKey() && $data === $item->getValue())
-                        : $key === $item->getKey();
-                }
-            )
-        );
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        foreach ($this->items as $item) {
-            if ($item->getKey() === $offset) {
-                $item->setValue($value);
-            }
-        }
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        $this->items = array_filter($this->items, function ($item) use ($offset) {
-            return !$item->getKey() === $offset;
-        });
     }
 
     public function current(): CollectionItemInterface
@@ -168,31 +115,21 @@ abstract class AbstractCollection implements CollectionInterface
         return count($this->items);
     }
 
-    function setDataWhereKey(mixed $whereKey, mixed $value, bool $strict = false): CollectionInterface
+    function filter(callable $filter):CollectionInterface
     {
+        $outputArray = new static();
         foreach ($this->items as $item) {
-            if ($strict ? $item->getKey() === $whereKey : $item->getKey() == $whereKey) {
-                $item->setValue($value);
+            if($filter($item)){
+                $outputArray->items[] = $item;
             }
         }
-        return $this;
-    }
-
-    function setKeyWhereData(mixed $key, mixed $whereValue, bool $strict = false): CollectionInterface
-    {
-        foreach ($this->items as $item) {
-            if ($strict ? $item->getValue() === $whereValue : $item->getValue() == $whereValue) {
-                $item->setKey($key);
-            }
-        }
-        return $this;
+        return $outputArray;
     }
 
     function first(): CollectionItemInterface
     {
         return reset($this->items);
     }
-
     function last(): CollectionItemInterface
     {
         return end($this->items);
@@ -207,38 +144,6 @@ abstract class AbstractCollection implements CollectionInterface
                 }
             )
         );
-    }
-
-    /**
-     * Reduced the collection to a list of items based on the given criteria
-     * @param mixed $data Items are matched primarily on this value. Comparison is strict.
-     * @param mixed|null $key If provided, both `$data` and this value must match.  As with `$data`, comparison is also strict.
-     * @return CollectionInterface
-     */
-    public function findDataWhere(mixed $data, mixed $key = null): self
-    {
-        return self::FromCollectionItems(
-            array_filter(
-                $this->items,
-                function ($item) use ($key, $data) {
-                    return $key !== null
-                        ? ($data === $item->getValue() && $key === $item->getKey())
-                        : $data === $item->getValue();
-                }
-            )
-        );
-    }
-
-    /**
-     * Create a collection from an established list of collection items.  Used exclusively for mutation.
-     * @param CollectionItemInterface[] $items
-     * @return CollectionInterface
-     */
-    protected static function FromCollectionItems(array $items): CollectionInterface
-    {
-        $newCollection = new static();
-        $newCollection->items = $items;
-        return $newCollection;
     }
 
 
