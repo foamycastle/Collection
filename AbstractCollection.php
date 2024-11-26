@@ -13,55 +13,6 @@ abstract class AbstractCollection implements CollectionInterface
      */
     protected array $items;
 
-    /**
-     * Create a collection from separate key and value arrays
-     * @return CollectionInterface
-     */
-    static function New():CollectionInterface
-    {
-        return new static();
-    }
-    static function From(array $keys, ?array $data = null): CollectionInterface
-    {
-        $newCollection = new static();
-        if (array_is_list($keys) && array_is_list($data)) {
-            $newCollection->items =
-                array_map(function ($key, $datum) {
-                    return new CollectionItem($key, $datum);
-                },
-                    $keys, $data);
-            return $newCollection;
-        }
-        if ($data === null) {
-            if (array_is_list($keys)) {
-                $newCollection->items =
-                    array_map(function ($key) {
-                        return new CollectionItem($key, null);
-                    }, $keys);
-                return $newCollection;
-            }
-            $newCollection->items = array_map(function ($key,$value) {
-                return new CollectionItem($key, $value);
-            },array_keys($keys),array_values($keys));
-            return $newCollection;
-        }
-        do {
-            $newCollection->items[] = new CollectionItem(current($keys), current($data));
-        } while (next($data) && next($keys));
-        return $newCollection;
-    }
-
-    /**
-     * Create a collection from an established list of collection items.  Used exclusively for mutation.
-     * @param CollectionItemInterface[] $items
-     * @return CollectionInterface
-     */
-    protected static function FromCollectionItems(array $items): CollectionInterface
-    {
-        $newCollection = new static();
-        $newCollection->items = $items;
-        return $newCollection;
-    }
 
     function append(mixed $key, mixed $value): CollectionInterface
     {
@@ -117,13 +68,7 @@ abstract class AbstractCollection implements CollectionInterface
 
     function filter(callable $filter):CollectionInterface
     {
-        $outputArray = new static();
-        foreach ($this->items as $item) {
-            if($filter($item)){
-                $outputArray->items[] = $item;
-            }
-        }
-        return $outputArray;
+
     }
 
     function first(): CollectionItemInterface
