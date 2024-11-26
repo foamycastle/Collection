@@ -6,5 +6,7 @@ use Foamycastle\Collection\AbstractCollection;
 
 class Collection extends AbstractCollection
 {
-    public function __construct(){}
+    protected function __construct(array $items=[]){
+        $this->items = $items;
+    }
 }
