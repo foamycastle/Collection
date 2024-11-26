@@ -13,6 +13,54 @@ abstract class AbstractCollection implements CollectionInterface
      */
     protected array $items;
 
+    /**
+     * Create a new collection from a list of items
+     * @param array $items
+     * @return CollectionInterface
+     */
+    static function FromList(array $items):CollectionInterface
+    {
+        $counter=0;
+        return new Collection(
+            array_map(
+                function ($value) use (&$counter) {
+                    return new CollectionItem($counter++,$value);
+                },
+                array_values($items)
+            )
+        );
+
+    }
+
+    /**
+     * Create a collection from a list of keys and values. If the number of elements in the `$keys`
+     * array does not match the number of elements in the `$values` array, a list collection is returned
+     * comprised of only values
+     * @param array $keys
+     * @param array $values
+     * @return CollectionInterface
+     */
+    static function FromKeysAndValues(array $keys,array $values):CollectionInterface
+    {
+        if(count($keys)!=count($values)) {
+            return static::FromList($values);
+        }
+        return new Collection(
+            array_map(
+                function ($key,$value) {
+                    return new CollectionItem($key,$value);
+                },
+                $keys,$values
+            )
+        );
+    }
+
+    static function FromCollectionItems(array $items):CollectionInterface
+    {
+        $newCollection = new static();
+        $newCollection->items = $items;
+        return $newCollection;
+    }
 
     function append(mixed $key, mixed $value): CollectionInterface
     {
