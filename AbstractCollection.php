@@ -43,21 +43,6 @@ abstract class AbstractCollection implements CollectionInterface
      * @param array $values
      * @return CollectionInterface
      */
-    static function FromKeysAndValues(array $keys,array $values):CollectionInterface
-    {
-        if(count($keys)!=count($values)) {
-            return static::FromList($values);
-        }
-        return new Collection(
-            array_map(
-                function ($key,$value) {
-                    return new CollectionItem($key,$value);
-                },
-                $keys,$values
-            )
-        );
-    }
-
     static function FromCollectionItems(array $items):CollectionInterface
     {
         $newCollection = new static();

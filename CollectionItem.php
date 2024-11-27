@@ -5,7 +5,7 @@ namespace Foamycastle\Collection;
 class CollectionItem implements CollectionItemInterface
 {
     private string $objectId;
-    public function __construct(private mixed $key, private mixed $value)
+    public function __construct(private mixed $key, private mixed $value=null)
     {
         $this->objectId = uniqid(random_bytes(4),true);
     }
