@@ -11,43 +11,51 @@ abstract class AbstractCollection implements CollectionInterface
      * An array of containers that store key-value pairs
      * @var list<CollectionItemInterface>
      */
-    protected array $items;
+    protected iterable $items;
 
     /**
      * Create a new collection from a list of items
-     * @param array $items
+     * @param iterable $items
      * @return CollectionInterface
      */
-    static function FromList(array $items):CollectionInterface
+    static function From(iterable $items):CollectionInterface
     {
-        return new Collection(
-            array_map(
-                function ($value,$key) {
-                    if($value instanceof CollectionItemInterface) {
-                        return $value;
-                    }
-                    return new CollectionItem($key,$value);
-                },
-                array_values($items),
-                array_keys($items)
-            )
-        );
-
+        if(is_array($items)) {
+            return new Collection(
+                array_map(
+                    function ($value,$key) {
+                        if($value instanceof CollectionItemInterface) {
+                            return $value;
+                        }
+                        return new CollectionItem($key,$value);
+                    },
+                    array_values($items),
+                    array_keys($items)
+                )
+            );
+        }
+        if($items instanceof \Traversable) {
+            $newCollection = new Collection();
+            foreach($items as $key=>$item) {
+                $newCollection->items[] = new CollectionItem($key,$item);
+            }
+            return $newCollection;
+        }
+        return new Collection([]);
     }
 
     /**
-     * Create a collection from a list of keys and values. If the number of elements in the `$keys`
-     * array does not match the number of elements in the `$values` array, a list collection is returned
-     * comprised of only values
-     * @param array $keys
-     * @param array $values
+     * @param CollectionItemInterface[] $items
      * @return CollectionInterface
      */
     static function FromCollectionItems(array $items):CollectionInterface
     {
-        $newCollection = new static();
-        $newCollection->items = $items;
-        return $newCollection;
+        return new Collection(
+            array_filter(
+                $items,
+                fn($item) => $item instanceof CollectionItemInterface
+            )
+        );
     }
 
     public function offsetExists(mixed $offset): bool
@@ -67,7 +75,7 @@ abstract class AbstractCollection implements CollectionInterface
         $found=$this->findByKey($offset,true);
 
         return $found->count() > 0
-            ? reset($found->items)
+            ? reset($found->items)->getValue()
             : null;
 
     }
