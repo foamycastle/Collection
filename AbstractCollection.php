@@ -71,7 +71,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         return
             array_filter(
-                $this->collection,
+                $this->collection ?? [],
                 function ($item) use ($key) {
                     return $item->key == $key;
                 }
@@ -87,7 +87,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         return
             array_filter(
-                $this->collection,
+                $this->collection ?? [],
                 function ($item) use ($value) {
                     return $item->value == $value;
                 }
@@ -103,7 +103,7 @@ abstract class AbstractCollection implements CollectionInterface
     {
         return
             array_filter(
-                $this->collection,
+                $this->collection ?? [],
                 function ($item) use ($id) {
                     return $item->objectId == $id;
                 }
