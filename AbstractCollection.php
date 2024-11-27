@@ -20,13 +20,16 @@ abstract class AbstractCollection implements CollectionInterface
      */
     static function FromList(array $items):CollectionInterface
     {
-        $counter=0;
         return new Collection(
             array_map(
-                function ($value) use (&$counter) {
-                    return new CollectionItem($counter++,$value);
+                function ($value,$key) {
+                    if($value instanceof CollectionItemInterface) {
+                        return $value;
+                    }
+                    return new CollectionItem($key,$value);
                 },
-                array_values($items)
+                array_values($items),
+                array_keys($items)
             )
         );
 
