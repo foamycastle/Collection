@@ -79,7 +79,7 @@ abstract class AbstractCollection implements CollectionInterface
         $found=$this->findByKey($offset,true);
 
         return $found->count() > 0
-            ? $found[0]
+            ? reset($found->items)
             : null;
 
     }
