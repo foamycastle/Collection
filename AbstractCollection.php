@@ -82,6 +82,11 @@ abstract class AbstractCollection implements CollectionInterface
             $found=$this->find($offset);
             if($found!==null) {
                 $found->setValue($value);
+            }else{
+                if($offset->getValue()===null){
+                    $offset->setValue($value);
+                }
+                $this->items[] = $offset;
             }
             return;
         }
@@ -91,6 +96,8 @@ abstract class AbstractCollection implements CollectionInterface
                 foreach ($found as $item) {
                     $item->setValue($value);
                 }
+            }else{
+                $this->items[]=new CollectionItem($offset,$value);
             }
         }
     }
