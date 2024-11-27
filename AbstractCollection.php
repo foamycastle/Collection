@@ -187,10 +187,10 @@ abstract class AbstractCollection implements CollectionInterface
     function findByKey(mixed $key, bool $strict=false): CollectionInterface
     {
         return
-            new Collection(
+            self::FromCollectionItems(
                 array_filter(
                     $this->items,
-                    function($item) use ($key,$strict) {
+                    function(CollectionItemInterface $item) use ($key,$strict) {
                         return $strict
                             ? $item->getKey() === $key
                             : $item->getKey() == $key;
@@ -202,11 +202,11 @@ abstract class AbstractCollection implements CollectionInterface
     function findByKeyType(string $keyType): CollectionInterface
     {
         return
-            new Collection(
+            self::FromCollectionItems(
                 array_filter(
                     $this->items,
                     function($item) use ($keyType) {
-                        $item->getKeyType() === $keyType;
+                        return $item->getKeyType() === $keyType;
                     }
                 )
             );
@@ -215,7 +215,7 @@ abstract class AbstractCollection implements CollectionInterface
     function findByValue(mixed $value, bool $strict=false): CollectionInterface
     {
         return
-            new Collection(
+            self::FromCollectionItems(
                 array_filter(
                     $this->items,
                     function($item) use ($value,$strict) {
@@ -230,11 +230,11 @@ abstract class AbstractCollection implements CollectionInterface
     function findByValueType(string $valueType): CollectionInterface
     {
         return
-            new Collection(
+            self::FromCollectionItems(
                 array_filter(
                     $this->items,
                     function($item) use ($valueType) {
-                        $item->getValueType() === $valueType;
+                        return $item->getValueType() === $valueType;
                     }
                 )
             );
