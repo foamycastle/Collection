@@ -2,264 +2,112 @@
 
 namespace Foamycastle\Collection;
 
+use ArrayIterator;
+use Traversable;
+
 /**
  * @property-read int $count
  */
 abstract class AbstractCollection implements CollectionInterface
 {
-    /**
-     * An array of containers that store key-value pairs
-     * @var list<CollectionItemInterface>
-     */
-    protected iterable $items;
 
     /**
-     * Create a new collection from a list of items
-     * @param iterable $items
-     * @return CollectionInterface
+     * The list of collection items
+     * @var CollectionItem[]
      */
-    static function From(iterable $items):CollectionInterface
-    {
-        if(is_array($items)) {
-            return new Collection(
-                array_map(
-                    function ($value,$key) {
-                        if($value instanceof CollectionItemInterface) {
-                            return $value;
-                        }
-                        return new CollectionItem($key,$value);
-                    },
-                    array_values($items),
-                    array_keys($items)
-                )
-            );
-        }
-        if($items instanceof \Traversable) {
-            $newCollection = new Collection();
-            foreach($items as $key=>$item) {
-                $newCollection->items[] = new CollectionItem($key,$item);
-            }
-            return $newCollection;
-        }
-        return new Collection([]);
-    }
-
-    /**
-     * @param CollectionItemInterface[] $items
-     * @return CollectionInterface
-     */
-    static function FromCollectionItems(array $items):CollectionInterface
-    {
-        return new Collection(
-            array_filter(
-                $items,
-                fn($item) => $item instanceof CollectionItemInterface
-            )
-        );
-    }
+    protected array $collection;
 
     public function offsetExists(mixed $offset): bool
     {
-        if($offset instanceof CollectionItem) {
-            $offset = $offset->getKey();
-        }
-        return $this->findByKey($offset)->count() > 0;
+        return !is_null($this->findByKey($offset));
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset):?CollectionItemInterface
     {
-        if($offset instanceof CollectionItem) {
-            return $this->find($offset);
-        }
-        //return the first item of this collection
-        $found=$this->findByKey($offset,true);
-
-        return $found->count() > 0
-            ? reset($found->items)->getValue()
-            : null;
-
+        return $this->findByKey($offset);
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if(empty($offset) && $value instanceof CollectionItem) {
-            $this->items[] = $value;
-            return;
-        }
-        if($offset instanceof CollectionItem) {
-            $found=$this->find($offset);
-            if($found!==null) {
-                $found->setValue($value);
-            }else{
-                if($offset->getValue()===null){
-                    $offset->setValue($value);
-                }
-                $this->items[] = $offset;
-            }
-            return;
-        }
-        if(is_scalar($offset)) {
-            $found=$this->findByKey($offset);
-            if($found->count()>0) {
-                foreach ($found as $item) {
-                    $item->setValue($value);
-                }
-            }else{
-                $this->items[]=new CollectionItem($offset,$value);
-            }
+        if (is_null($offset)) return;
+        $item=$this->findByKey($offset);
+        if (is_null($item)){
+            $newItem=new CollectionItem($offset,$value);
+            $this->collection[$newItem->objectId]=$newItem;
+        }else{
+            $newItem=new CollectionItem($offset,$value);
+            unset($this->collection[$item->objectId]);
+            $this->collection[$item->objectId]=$newItem;
         }
     }
 
     public function offsetUnset(mixed $offset): void
     {
-        unset($this->items[$offset]);
-    }
-
-
-    function append(mixed $key, mixed $value): CollectionInterface
-    {
-        $this->items[] = new CollectionItem($key, $value);
-        return $this;
-    }
-
-    function prepend(mixed $key, mixed $value): CollectionInterface
-    {
-        array_unshift($this->items, new CollectionItem($key, $value));
-        return $this;
-    }
-
-    public function pop(): CollectionItemInterface
-    {
-        return array_pop($this->items);
-    }
-
-    public function shift(): CollectionItemInterface
-    {
-        return array_shift($this->items);
-    }
-
-    public function current(): CollectionItemInterface
-    {
-        return current($this->items);
-    }
-
-    public function next(): void
-    {
-        next($this->items);
-    }
-
-    public function key(): int
-    {
-        return key($this->items);
-    }
-
-    public function valid(): bool
-    {
-        return key($this->items) !== null;
-    }
-
-    public function rewind(): void
-    {
-        reset($this->items);
+        if (is_null($offset)) return;
+        $item=$this->findByKey($offset);
+        if (is_null($item)){
+            return;
+        }
+        unset($this->collection[$item->objectId]);
     }
 
     public function count(): int
     {
-        return count($this->items);
+        return count($this->collection);
     }
 
-    function filter(callable $filter):CollectionInterface
+    public function getIterator(): Traversable
     {
-        return
-            new Collection(
-                array_filter($this->items, $filter),
-            );
+        return new ArrayIterator($this->collection);
     }
-    public function find(CollectionItemInterface $collectionItem):?CollectionItemInterface
+
+
+    /**
+     * Locate a collection item by its key data
+     * @param int|string $key the data to locate
+     * @return CollectionItem|null
+     */
+    protected function findByKey(int|string $key):?CollectionItem
     {
         return
             array_filter(
-                $this->items,
-                fn($item) => $item->getObjectId() === $collectionItem->getObjectId()
+                $this->collection,
+                function ($item) use ($key) {
+                    return $item->key == $key;
+                }
             )[0] ?? null;
     }
 
-    function findByKey(mixed $key, bool $strict=false): CollectionInterface
+    /**
+     * Locate a collection item by its value data
+     * @param mixed $value the data to locate
+     * @return CollectionItem|null
+     */
+    protected function findByValue(mixed $value):?CollectionItem
     {
         return
-            self::FromCollectionItems(
-                array_filter(
-                    $this->items,
-                    function(CollectionItemInterface $item) use ($key,$strict) {
-                        return $strict
-                            ? $item->getKey() === $key
-                            : $item->getKey() == $key;
-                    }
-                )
-            );
-    }
-
-    function findByKeyType(string $keyType): CollectionInterface
-    {
-        return
-            self::FromCollectionItems(
-                array_filter(
-                    $this->items,
-                    function($item) use ($keyType) {
-                        return $item->getKeyType() === $keyType;
-                    }
-                )
-            );
-    }
-
-    function findByValue(mixed $value, bool $strict=false): CollectionInterface
-    {
-        return
-            self::FromCollectionItems(
-                array_filter(
-                    $this->items,
-                    function($item) use ($value,$strict) {
-                        return $strict
-                            ? $item->getValue() === $value
-                            : $item->getValue() == $value;
-                    }
-                )
-            );
-    }
-
-    function findByValueType(string $valueType): CollectionInterface
-    {
-        return
-            self::FromCollectionItems(
-                array_filter(
-                    $this->items,
-                    function($item) use ($valueType) {
-                        return $item->getValueType() === $valueType;
-                    }
-                )
-            );
-    }
-
-
-    function first(): CollectionItemInterface
-    {
-        return reset($this->items);
-    }
-    function last(): CollectionItemInterface
-    {
-        return end($this->items);
-    }
-    public function hasKey(mixed $key): bool
-    {
-        return !empty(
             array_filter(
-                $this->items,
-                function ($item) use ($key) {
-                    return $item->getKey() === $key;
+                $this->collection,
+                function ($item) use ($value) {
+                    return $item->value == $value;
                 }
-            )
-        );
+            )[0] ?? null;
     }
 
+    /**
+     * Locate a collection item by its object id
+     * @param string $id the id to locate
+     * @return CollectionItem|null
+     */
+    protected function findByObjectId(string $id):?CollectionItem
+    {
+        return
+            array_filter(
+                $this->collection,
+                function ($item) use ($id) {
+                    return $item->objectId == $id;
+                }
+            )[0] ?? null;
+    }
 
 }

@@ -4,68 +4,24 @@ namespace Foamycastle\Collection;
 
 class CollectionItem implements CollectionItemInterface
 {
-    private string $objectId;
-    public function __construct(private mixed $key, private mixed $value=null)
+    public readonly string $objectId;
+    public function __construct(public readonly int|string $key, public readonly mixed $value=null)
     {
-        $this->objectId = uniqid(random_bytes(4),true);
-    }
-
-    function getKey(): mixed
-    {
-        return $this->key;
-    }
-
-    function getValue(): mixed
-    {
-        return $this->value;
-    }
-
-    function setKey(mixed $key): CollectionItemInterface
-    {
-        $this->key = $key;
-        return $this;
-    }
-
-    function setValue(mixed $value): CollectionItemInterface
-    {
-        $this->value = $value;
-        return $this;
-    }
-
-    function getKeyType(): string
-    {
-        if(is_object($this->key)) {
-            return get_class($this->key);
+        try{
+            $this->objectId = random_bytes(8);
+        }catch (\Exception $e){
+            $this->objectId = uniqid('', true);
         }
-        return gettype($this->key);
     }
 
-    function getValueType(): string
+    function withValue(mixed $value = null): CollectionItemInterface
     {
-        if(is_object($this->key)) {
-            return get_class($this->value);
-        }
-        return gettype($this->value);
+        return new self($this->key, $value ?? $this->value);
     }
 
-    public function getObjectId(): string
+    function withKey(int|string $key): CollectionItemInterface
     {
-        return $this->objectId;
+        return new self($key, $this->value);
     }
 
-    public function tuple(): array
-    {
-        return [$this->key,$this->value];
-    }
-
-    public function __toString(): string
-    {
-        if(is_scalar($this->value)) {
-            if(is_bool($this->value)) {
-                return $this->value ? 'true' : 'false';
-            }
-            return (string)$this->value;
-        }
-        return (new Stringify($this->value));
-    }
 }
