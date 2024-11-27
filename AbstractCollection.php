@@ -58,7 +58,7 @@ abstract class AbstractCollection implements CollectionInterface
         return $this->findByKey($offset)->count() > 0;
     }
 
-    public function offsetGet(mixed $offset): ?CollectionItemInterface
+    public function offsetGet(mixed $offset): mixed
     {
         if($offset instanceof CollectionItem) {
             return $this->find($offset);
