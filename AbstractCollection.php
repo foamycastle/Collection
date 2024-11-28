@@ -69,13 +69,12 @@ abstract class AbstractCollection implements CollectionInterface
      */
     protected function findByKey(int|string $key):?CollectionItem
     {
-        return
-            array_filter(
-                $this->collection ?? [],
-                function ($item) use ($key) {
-                    return $item->key == $key;
-                }
-            )[0] ?? null;
+        foreach ($this->collection as $item) {
+            if($item->key==$key){
+                return $item;
+            }
+        }
+        return null;
     }
 
     /**
@@ -85,13 +84,12 @@ abstract class AbstractCollection implements CollectionInterface
      */
     protected function findByValue(mixed $value):?CollectionItem
     {
-        return
-            array_filter(
-                $this->collection ?? [],
-                function ($item) use ($value) {
-                    return $item->value == $value;
-                }
-            )[0] ?? null;
+        foreach ($this->collection as $item) {
+            if($item->value==$value){
+                return $item;
+            }
+        }
+        return null;
     }
 
     /**
@@ -101,13 +99,12 @@ abstract class AbstractCollection implements CollectionInterface
      */
     protected function findByObjectId(string $id):?CollectionItem
     {
-        return
-            array_filter(
-                $this->collection ?? [],
-                function ($item) use ($id) {
-                    return $item->objectId == $id;
-                }
-            )[0] ?? null;
+        foreach ($this->collection as $item) {
+            if($item->objectId==$id){
+                return $item;
+            }
+        }
+        return null;
     }
 
 }
