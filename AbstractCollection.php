@@ -33,11 +33,11 @@ abstract class AbstractCollection implements CollectionInterface
         $item=$this->findByKey($offset);
         if (is_null($item)){
             $newItem=new CollectionItem($offset,$value);
-            $this->collection[$newItem->objectId]=$newItem;
+            $this->collection[$newItem->getObjectId()]=$newItem;
         }else{
             $newItem=new CollectionItem($offset,$value);
-            unset($this->collection[$item->objectId]);
-            $this->collection[$item->objectId]=$newItem;
+            unset($this->collection[$item->getObjectId()]);
+            $this->collection[$item->getObjectId()]=$newItem;
         }
     }
 
@@ -48,7 +48,7 @@ abstract class AbstractCollection implements CollectionInterface
         if (is_null($item)){
             return;
         }
-        unset($this->collection[$item->objectId]);
+        unset($this->collection[$item->getObjectId()]);
     }
 
     public function count(): int
@@ -70,7 +70,7 @@ abstract class AbstractCollection implements CollectionInterface
     protected function findByKey(int|string $key):?CollectionItem
     {
         foreach ($this->collection as $item) {
-            if($item->key==$key){
+            if($item->getKey()==$key){
                 return $item;
             }
         }
@@ -85,7 +85,7 @@ abstract class AbstractCollection implements CollectionInterface
     protected function findByValue(mixed $value):?CollectionItem
     {
         foreach ($this->collection as $item) {
-            if($item->value==$value){
+            if($item->getValue()==$value){
                 return $item;
             }
         }
@@ -100,7 +100,7 @@ abstract class AbstractCollection implements CollectionInterface
     protected function findByObjectId(string $id):?CollectionItem
     {
         foreach ($this->collection as $item) {
-            if($item->objectId==$id){
+            if($item->getObjectId()==$id){
                 return $item;
             }
         }

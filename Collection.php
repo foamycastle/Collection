@@ -13,7 +13,7 @@ class Collection extends AbstractCollection
         $newCollection = new static();
         foreach ($collection as $key=>$value) {
             $newItem=new CollectionItem($key,$value);
-            $newCollection->collection[$newItem->objectId]=$newItem;
+            $newCollection->collection[$newItem->getObjectId()]=$newItem;
         }
         return $newCollection;
     }
