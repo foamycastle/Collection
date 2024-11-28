@@ -6,4 +6,7 @@ interface CollectionItemInterface
 {
     function withValue(mixed $value=null):CollectionItemInterface;
     function withKey(int|string $key):CollectionItemInterface;
+    function getKey():string|int;
+    function getValue():mixed;
+    function getObjectId():string;
 }

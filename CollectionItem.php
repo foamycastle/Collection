@@ -24,4 +24,20 @@ class CollectionItem implements CollectionItemInterface
         return new self($key, $this->value);
     }
 
+    function getKey(): string|int
+    {
+        return $this->key ?? "";
+    }
+
+    function getValue(): mixed
+    {
+        return $this->value ?? "";
+    }
+
+    function getObjectId(): string
+    {
+        return $this->objectId ?? "";
+    }
+
+
 }
