@@ -4,8 +4,8 @@ namespace Foamycastle\Collection;
 
 class CollectionItem implements CollectionItemInterface
 {
-    public readonly string $objectId;
-    public function __construct(public readonly int|string $key, public readonly mixed $value=null)
+    protected string $objectId;
+    public function __construct(protected int|string $key, protected mixed $value=null)
     {
         try{
             $this->objectId = random_bytes(8);
