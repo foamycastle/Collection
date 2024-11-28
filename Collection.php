@@ -5,7 +5,9 @@ namespace Foamycastle\Collection;
 class Collection extends AbstractCollection
 {
     protected function __construct()
-    {}
+    {
+        $this->collection=[];
+    }
     public static function FromArray(array $collection):static
     {
         $newCollection = new static();
