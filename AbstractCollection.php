@@ -19,18 +19,18 @@ abstract class AbstractCollection implements CollectionInterface
 
     public function offsetExists(mixed $offset): bool
     {
-        return !is_null($this->findByKey($offset));
+        return !is_null($this->findFirstByKey($offset));
     }
 
     public function offsetGet(mixed $offset):?CollectionItemInterface
     {
-        return $this->findByKey($offset);
+        return $this->findFirstByKey($offset);
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (is_null($offset)) return;
-        $item=$this->findByKey($offset);
+        $item=$this->findFirstByKey($offset);
         if (is_null($item)){
             $newItem=new CollectionItem($offset,$value);
             $this->collection[$newItem->getObjectId()]=$newItem;
@@ -44,7 +44,7 @@ abstract class AbstractCollection implements CollectionInterface
     public function offsetUnset(mixed $offset): void
     {
         if (is_null($offset)) return;
-        $item=$this->findByKey($offset);
+        $item=$this->findFirstByKey($offset);
         if (is_null($item)){
             return;
         }
@@ -67,7 +67,7 @@ abstract class AbstractCollection implements CollectionInterface
      * @param int|string $key the data to locate
      * @return CollectionItem|null
      */
-    protected function findByKey(int|string $key):?CollectionItem
+    public function findFirstByKey(int|string $key):?CollectionItem
     {
         foreach ($this->collection as $item) {
             if($item->getKey()==$key){
@@ -82,10 +82,10 @@ abstract class AbstractCollection implements CollectionInterface
      * @param mixed $value the data to locate
      * @return CollectionItem|null
      */
-    protected function findByValue(mixed $value):?CollectionItem
+    public function findFirstByValue(mixed $value):?CollectionItemInterface
     {
         foreach ($this->collection as $item) {
-            if($item->getValue()==$value){
+            if($item->getValue()===$value){
                 return $item;
             }
         }
@@ -97,7 +97,7 @@ abstract class AbstractCollection implements CollectionInterface
      * @param string $id the id to locate
      * @return CollectionItem|null
      */
-    protected function findByObjectId(string $id):?CollectionItem
+    public function findFirstByObjectId(string $id):?CollectionItemInterface
     {
         foreach ($this->collection as $item) {
             if($item->getObjectId()==$id){
@@ -105,6 +105,111 @@ abstract class AbstractCollection implements CollectionInterface
             }
         }
         return null;
+    }
+
+    function findAnyByKey(int|string $key): array
+    {
+        return array_filter($this->collection,function($item) use ($key){
+            return $item->getKey()==$key;
+        });
+    }
+
+    function findAnyByValue(int|string $value): array
+    {
+        return array_filter($this->collection,function($item) use ($value){
+            return $item->getValue()===$value;
+        });
+    }
+
+
+    public function getKeys():\Generator
+    {
+        foreach ($this->collection as $item) {
+            yield $item->getKey();
+        }
+    }
+
+    public function getValues():\Generator
+    {
+        foreach ($this->collection as $item) {
+            yield $item->getValue();
+        }
+    }
+
+    function getKeysWithObjectId(): \Generator
+    {
+        foreach ($this->collection as $item) {
+            yield [$item->getObjectId()=>$item->getKey()];
+        }
+    }
+
+    function getValuesWithObjectId(): \Generator
+    {
+        foreach ($this->collection as $item) {
+            yield [$item->getObjectId()=>$item->getValue()];
+        }
+    }
+
+
+
+    protected function getNextNumericKey():int
+    {
+        $keys=[...$this->getKeys()];
+        $numericKeys=array_filter($keys,function($key){
+            return is_numeric($key);
+        });
+        rsort($numericKeys);
+        return (is_int(reset($numericKeys)) ? current($numericKeys) + 1 : false) ?: 0;
+    }
+
+    function add(...$items): void
+    {
+        $newItems=[];
+        $newIndex=$this->getNextNumericKey();
+        if(array_is_list($items)) {
+            foreach ($items as $item) {
+                if ($item instanceof CollectionItem) {
+                    $newItems[$item->getObjectId()]=$item;
+                    continue;
+                }
+                if (is_array($item)) {
+                    if(array_is_list($item)){
+                        foreach ($item as $value) {
+                            $newItem=new CollectionItem($newIndex++,$value);
+                            $newItems[$newItem->getObjectId()]=$newItem;
+                        }
+                    }else{
+                        foreach ($item as $itemKey=>$itemValue) {
+                            $newItem=new CollectionItem($itemKey,$itemValue);
+                            $newItems[$newItem->getObjectId()]=$newItem;
+                        }
+                    }
+                    continue;
+                }
+                if(is_scalar($item)||is_object($item)){
+                    $newItem=new CollectionItem($newIndex++,$item);
+                    $newItems[$newItem->getObjectId()]=$newItem;
+                }
+            }
+        }else{
+            foreach ($items as $itemKey=>$itemValue) {
+                $newItem=new CollectionItem($itemKey,$itemValue);
+                $newItems[$newItem->getObjectId()]=$newItem;
+            }
+        }
+        $this->collection=array_merge($this->collection,$newItems);
+    }
+
+    function remove(int|string $key): void
+    {
+        $found=$this->findFirstByKey($key);
+        if (is_null($found)) return;
+        unset($this->collection[$found->getObjectId()]);
+    }
+
+    function has(int|string $key): bool
+    {
+        return $this->findFirstByKey($key)!==null;
     }
 
 }
