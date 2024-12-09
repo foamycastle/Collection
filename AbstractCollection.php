@@ -13,7 +13,7 @@ abstract class AbstractCollection implements CollectionInterface
 
     /**
      * The list of collection items
-     * @var CollectionItem[]
+     * @var CollectionItemInterface[]
      */
     protected array $collection;
 
