@@ -225,49 +225,44 @@ class Collection extends AbstractCollection
 
     public function append(...$items): static
     {
-        if(count($items) == 2) {
-            if(array_key_exists('key', $items) && array_key_exists('value', $items)) {
-                $this->items[$items['key']] = $items['value'];
-                return $this;
+        foreach($items as $item) {
+            if($item instanceof static) {
+                $this->items = array_merge($this->items, $item->items);
+                continue;
             }
-            if(is_string($items[0])){
-                $this->items[$items[0]] = $items[1];
-                return $this;
-            }
-        }
-        foreach($items as $key => $value) {
-            if($key=='key'){
-                $addKey=$value;
-            }elseif($key=='value'){
-                $addValue=$value;
+            if(is_array($item)) {
+                if(array_is_list($item)) {
+                    $this->items = array_merge($this->items, $item);
+                }else{
+                    foreach($item as $itemKey=>$itemValue) {
+                        $this->items[]=[$itemKey=>$itemValue];
+                    }
+                }
             }else{
-                $addKey=$key;
-                $addValue=$value;
+                $this->items[]=$item;
             }
-            if(is_array($addValue)) {
-                $addKey = key($addValue) ?: $addValue[0];
-                $addValue = current ($addValue) ?? $addValue[1];
-            }
-            if(empty($addKey)) return $this;
-            $this->items[$addKey]=$addValue;
         }
         return $this;
     }
 
     public function prepend(...$items): static
     {
-        if(count($items) === 2){
-            if(array_key_exists('key', $items) && array_key_exists('value', $items)){
-                $this->items=array_merge([ $items['key'] => $items['value'] ], $this->items);
-                return $this;
+        foreach ($items as $item) {
+            if($item instanceof static) {
+                array_unshift($this->items, ...$item->items);
+                continue;
             }
-        }
-        if(array_is_list($items)){
-            $this->items = array_merge($items, $this->items);
-            return $this;
-        }
-        foreach($items as $key=>$item){
-            array_unshift($this->items, [ $key => $item ]);
+            if(is_array($item)) {
+                if(array_is_list($item)) {
+                    array_unshift($this->items, ...$item);
+                }else{
+                    foreach($item as $itemKey=>$itemValue) {
+                        array_unshift($this->items, [$itemKey=>$itemValue]);
+                    }
+                }
+            }else{
+                array_unshift($this->items, [$item]);
+            }
         }
         return $this;
     }
