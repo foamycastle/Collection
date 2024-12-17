@@ -134,9 +134,15 @@ class Collection extends AbstractCollection
         return $this;
     }
 
-    public function remove(mixed $id): bool
+    public function removeFirst(mixed $id): bool
     {
         // TODO: Implement remove() method.
     }
+
+    public function removeAll(mixed $id): bool
+    {
+        // TODO: Implement removeAll() method.
+    }
+
 
 }

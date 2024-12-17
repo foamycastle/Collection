@@ -39,7 +39,14 @@ abstract class AbstractCollection implements \Countable, \IteratorAggregate
      * @param mixed $id the identifier by the which the item is known
      * @return bool TRUE if an item was removed, FALSE if no item was removed
      */
-    abstract public function remove(mixed $id): bool;
+    abstract public function removeFirst(mixed $id): bool;
+
+    /**
+     * Remove all the collection elements with a matching id
+     * @param mixed $id the identifier by the which the item is known
+     * @return bool TRUE if elements were removed, FALSE if no items were removed
+     */
+    abstract public function removeAll(mixed $id): bool;
 
     /**
      * Indicate that collection item exists
