@@ -24,9 +24,9 @@ class Collection extends AbstractCollection
 
     /**
      * @param array{'key':string,'value':mixed}|array<string,mixed>...$criteria
-     * @return mixed
+     * @return array
      */
-    public function findFirst(...$criteria): mixed
+    public function findFirst(...$criteria): array
     {
         //find named arguments first (key: locate_this_key, value: locate_this_value)
         if(isset($criteria['key'])) {
@@ -52,33 +52,166 @@ class Collection extends AbstractCollection
                 $key = key($criteria);
                 $value = current($criteria) ?? null;
             }else {
-                return null;
+                return [];
             }
         }
         //determine which scenario is true, then test
-        switch (true){
-            case (isset($key) && isset($value)):
-                return $this->items[$key]===$value
-                    ? $this->items[$key]
-                    : null;
-            case (!isset($value) && isset($key)):
-                return $this->items[$key] ?? null;
-            case (!isset($key) && isset($value)):
-                $search=array_search($value, $this->items, true);
-                return $search
-                    ? $this->items[$search]
-                    : null;
-            default:
-                return null;
-        }
+        return (match(true){
+            ((isset($key) && is_array($key)) && (isset($value) && is_array($value))) => function() use ($key, $value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if(in_array($itemKey, $key) || in_array($itemValue, $value)) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            ((isset($key) && is_array($key)) && (isset($value) && is_scalar($value))) => function() use ($key, $value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if(in_array($itemKey, $key) || $itemValue===$value) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            ((isset($key) && is_scalar($key)) && (isset($value) && is_array($value))) => function() use ($key, $value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if($itemKey===$key || in_array($itemValue, $value)) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+    },
+            ((isset($key) && is_scalar($key)) && (isset($value) && is_scalar($value))) => function() use ($key, $value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if($itemKey===$key || $itemValue===$value) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            (!isset($key)  && (isset($value) && is_scalar($value))) => function() use ($value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if($itemValue===$value) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            (!isset($key)  && (isset($value) && is_array($value))) => function() use ($value) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if(in_array($itemValue, $value)) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            ((isset($key) && is_scalar($key)) && !isset($value)) => function() use ($key) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if($itemKey===$key) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            },
+            ((isset($key) && is_array($key)) && !isset($value)) => function() use ($key) {
+                foreach($this->items as $item) {
+                    [$itemKey, $itemValue] = $item;
+                    if(in_array($itemKey, $key)) {
+                        return [$itemKey => $itemValue];
+                    }
+                }
+                return [];
+            }
+        })();
     }
 
     /**
-     * @inheritDoc
+     * @param array{'key':list<string|int>|string|int,'value':list<string|int>|string|int}|array<list<string|int>,list<string|int>> ...$criteria
+     * @return array|null
      */
-    public function findAll(...$criteria): mixed
+    public function findAll(...$criteria): ?array
     {
+        if(isset($criteria['key']) && is_string($criteria['key'])) {
+            $key = $criteria['key'];
+        }
+        if(isset($criteria['value'])) {
+            $value = $criteria['value'];
+        }
+        if(@array_is_list($criteria)) {
+            if(
+                count($criteria)==2
+                && (is_array($criteria[0]) || is_string($criteria[0]))
+                && (is_array($criteria[1]) || is_string($criteria[1]))
+            ) {
+                $key=$criteria[0];
+                $value=$criteria[1];
+            }
+        }
 
+        return match (true) {
+            (isset($key) && is_array($key)) && (isset($value) && is_array($value)) => array_filter(
+                $this->items,
+                function ($arrayValue,$arrayKey) use ($key, $value) {
+                    return in_array($arrayKey,$key) || in_array($arrayValue,$value);
+                },
+                ARRAY_FILTER_USE_BOTH
+            ),
+            (isset($key) && is_string($key)) && (isset($value) && is_array($value)) => array_filter(
+                $this->items,
+                function ($arrayValue,$arrayKey) use ($key, $value) {
+                    return in_array($arrayValue,$value) || $arrayKey===$key;
+                },
+                ARRAY_FILTER_USE_BOTH
+            ),
+            (isset($key) && is_string($key)) && (isset($value) && is_string($value)) => array_filter(
+                $this->items,
+                function ($arrayValue,$arrayKey) use ($key, $value) {
+                    return $arrayValue===$value || $arrayKey===$key;
+                },
+                ARRAY_FILTER_USE_BOTH
+            ),
+            (isset($key) && is_array($key)) && (isset($value) && is_string($value)) => array_filter(
+                $this->items,
+                function ($arrayValue,$arrayKey) use ($key, $value) {
+                    return $arrayValue===$value || in_array($arrayKey,$key);
+                },
+                ARRAY_FILTER_USE_BOTH
+            ),
+            ((isset($key) && is_array($key)) && !isset($value)) => array_filter(
+                $this->items,
+                function ($arrayKey) use ($key) {
+                    return in_array($arrayKey,$key);
+                },
+                ARRAY_FILTER_USE_KEY
+            ),
+            ((isset($key) && is_string($key)) && !isset($value)) => array_filter(
+                $this->items,
+                function ($arrayKey) use ($key) {
+                    return $arrayKey===$key;
+                },
+                ARRAY_FILTER_USE_KEY
+            ),
+            !isset($key) && (isset($value) && is_array($value)) => array_filter(
+                $this->items,
+                function ($arrayValue) use ($value) {
+                    return in_array($arrayValue,$value);
+                }
+            ),
+            !isset($key) && (isset($value) && is_string($value)) => array_filter(
+                $this->items,
+                function ($arrayValue) use ($value) {
+                    return $arrayValue===$value;
+                }
+            ),
+            default => [],
+        };
     }
 
 
