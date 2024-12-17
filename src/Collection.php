@@ -14,7 +14,12 @@ class Collection extends AbstractCollection
      */
     public function has(mixed $id): bool
     {
-        return isset($this->items[$id]);
+        foreach ($this->items as $item) {
+            if(key($item) === $id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
