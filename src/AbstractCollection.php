@@ -8,10 +8,11 @@ use Foamycastle\Collection\Items\StringItem;
 use Foamycastle\Traits\MetaDataObject;
 use Foamycastle\Traits\MetaDataObjectInterface;
 use IteratorAggregate;
+use MongoDB\BSON\Iterator;
 use SplObjectStorage;
 use Traversable;
 
-abstract class AbstractCollection implements CollectionInterface, IteratorAggregate
+abstract class AbstractCollection implements CollectionInterface, IteratorAggregate, \ArrayAccess
 {
     protected MetaDataObjectInterface $meta;
     protected SplObjectStorage $collection;
@@ -70,6 +71,10 @@ abstract class AbstractCollection implements CollectionInterface, IteratorAggreg
     {
         foreach($items as $itemKey => $itemValue) {
             if(is_string($itemKey) || is_int($itemKey)) {
+                if($itemValue instanceof ItemInterface) {
+                    $this->appendItem($itemValue);
+                    continue;
+                }
                 $this->append($itemKey, $itemValue);
             }
         }
@@ -85,25 +90,55 @@ abstract class AbstractCollection implements CollectionInterface, IteratorAggreg
         return null;
     }
 
-    function getItemsByKey(string $key): ?array
+    function getItemsByKey(string $key): \Traversable
     {
-        $output=[];
         foreach($this->getIterator() as $item) {
             if($item->getKey() === $key) {
-                $output[]=$item;
+                yield $item;
             }
         }
-        return empty($output) ? $output : null;
     }
 
-    public function getAllItems(): Traversable
+    public function getAllItems(): array
     {
-        return $this->getIterator();
+        return [...$this->getIterator()];
     }
 
     public function getIterator(): Traversable
     {
-        return $this->collection;
+        $this->collection->rewind();
+        while($this->collection->valid()) {
+            yield $this->collection->current();
+            $this->collection->next();
+        }
+    }
+
+    public function offsetExists(mixed $offset): bool
+    {
+        foreach($this->getIterator() as $item) {
+            if($item->getKey() === $offset) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->getItemByKey($offset)?->getValue();
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        $this->getItemByKey($offset)?->withValue($value);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        $item=$this->getItemByKey($offset);
+        if($item instanceof ItemInterface) {
+            $this->collection->offsetUnset($item);
+        }
     }
 
 

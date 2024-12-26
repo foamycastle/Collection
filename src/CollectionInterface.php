@@ -21,11 +21,33 @@ interface CollectionInterface
      */
     function appendItem(ItemInterface $item):void;
 
+    /**
+     * Add an associative array or an array of `ItemInterface`
+     * @param array $items
+     * @return void
+     */
     function appendArray(array $items):void;
 
+    /**
+     * Add the items from an existing collection or an array
+     * @param $items
+     * @return void
+     */
     function appendAll($items):void;
+
+    /**
+     * Retrieve an item referenced by the key
+     * @param string $key
+     * @return ItemInterface|null
+     */
     function getItemByKey(string $key):?ItemInterface;
-    function getItemsByKey(string $key):?array;
+
+    /**
+     *
+     * @param string $key
+     * @return array|null
+     */
+    function getItemsByKey(string $key):\Traversable;
     function getAllItems():mixed;
 
 }

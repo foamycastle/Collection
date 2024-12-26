@@ -29,17 +29,20 @@ abstract class AbstractItem implements ItemInterface
 
     function withKey(string $key): ItemInterface
     {
-        return new static($key, $this->value, $this->meta);
+        $this->key=$key;
+        return $this;
     }
 
     function withValue(mixed $value): ItemInterface
     {
-        return new static($this->key, $value, $this->meta);
+        $this->value=$value;
+        return $this;
     }
 
     function withMeta(array $meta): ItemInterface
     {
-        return new static($this->key, $this->value, $meta);
+        $this->meta=$meta;
+        return $this;
     }
 
 
