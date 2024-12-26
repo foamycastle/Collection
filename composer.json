@@ -18,7 +18,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Foamycastle\\Collection\\": "src"
+      "Foamycastle\\Collection\\": "src",
+      "Foamycastle\\": "./"
     }
   }
 }

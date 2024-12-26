@@ -4,11 +4,27 @@ namespace Foamycastle\Collection\Items;
 
 use Foamycastle\Collection\AbstractItem;
 
+/**
+ * @property-read string $string
+ */
 class StringItem extends AbstractItem
 {
-    public function __construct(string $key,string $value)
+    public function __construct(string $key,string $value, array $meta=[])
     {
-        parent::__construct($key, $value);
+        parent::__construct($key, $value, $meta);
+    }
+    public function __set(string $name, $value): void
+    {
+        if ($name == 'string') {
+            $this->value = $value;
+        }
+    }
+    public function __get(string $name): mixed
+    {
+        if ($name == 'string') {
+            return $this->value;
+        }
+        return null;
     }
 
 }

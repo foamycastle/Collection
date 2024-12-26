@@ -13,4 +13,19 @@ interface CollectionInterface
      * @return void
      */
     function append(string $key, mixed $data, array $meta=[]):void;
+
+    /**
+     * Add an item object to the collection
+     * @param ItemInterface $item The item object
+     * @return void
+     */
+    function appendItem(ItemInterface $item):void;
+
+    function appendArray(array $items):void;
+
+    function appendAll($items):void;
+    function getItemByKey(string $key):?ItemInterface;
+    function getItemsByKey(string $key):?array;
+    function getAllItems():mixed;
+
 }
