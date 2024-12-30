@@ -26,4 +26,15 @@ class ObjectItem extends AbstractItem
         return null;
     }
 
+    public function unserialize(string $data)
+    {
+        // TODO: Implement unserialize() method.
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        // TODO: Implement jsonSerialize() method.
+    }
+
+
 }

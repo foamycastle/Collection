@@ -27,17 +27,13 @@ class StringItem extends AbstractItem
         return null;
     }
 
-    public function serialize()
+    public function unserialize(string $data): void
     {
-        // TODO: Implement serialize() method.
+        $unserialize = unserialize($data);
+        $this->__unserialize($unserialize);
     }
 
-    public function unserialize(string $data)
-    {
-        // TODO: Implement unserialize() method.
-    }
-
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): string|bool
     {
         return json_encode($this->__serialize());
     }

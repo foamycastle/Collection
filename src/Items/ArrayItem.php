@@ -3,6 +3,7 @@
 namespace Foamycastle\Collection\Items;
 
 use ArrayAccess;
+use ArrayObject;
 use Foamycastle\Collection\AbstractItem;
 use Traversable;
 
@@ -38,5 +39,18 @@ class ArrayItem extends AbstractItem implements \IteratorAggregate,ArrayAccess
         unset($this->value[$offset]);
     }
 
+
+
+
+    public function unserialize(string $data): void
+    {
+        $unserialize = unserialize($data);
+        $this->__construct(...(new ArrayObject($unserialize)));
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        // TODO: Implement jsonSerialize() method.
+    }
 
 }

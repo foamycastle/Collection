@@ -59,6 +59,10 @@ abstract class AbstractItem implements ItemInterface, \Serializable, \JsonSerial
         $this->key = ($data['key'] ?? '');
         $this->value = ($data['value'] ?? '');
     }
+    public function serialize(): ?string
+    {
+        return serialize($this);
+    }
 
 
 
