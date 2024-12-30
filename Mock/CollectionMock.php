@@ -1,6 +1,6 @@
 <?php
 
-namespace Foamycastle\mock;
+namespace Foamycastle\Mock;
 
 use Foamycastle\Collection\AbstractCollection;
 

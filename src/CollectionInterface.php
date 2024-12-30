@@ -50,4 +50,10 @@ interface CollectionInterface
     function getItemsByKey(string $key):\Traversable;
     function getAllItems():mixed;
 
+    /**
+     * Return the collection type
+     * @return string
+     */
+    function getCollectionType():string;
+
 }

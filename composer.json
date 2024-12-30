@@ -20,6 +20,9 @@
     "psr-4": {
       "Foamycastle\\Collection\\": "src",
       "Foamycastle\\": "./"
-    }
+    },
+    "files": [
+      "Global/collect.php"
+    ]
   }
 }

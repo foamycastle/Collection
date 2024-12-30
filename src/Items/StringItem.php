@@ -27,4 +27,19 @@ class StringItem extends AbstractItem
         return null;
     }
 
+    public function serialize()
+    {
+        // TODO: Implement serialize() method.
+    }
+
+    public function unserialize(string $data)
+    {
+        // TODO: Implement unserialize() method.
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return json_encode($this->__serialize());
+    }
+
 }

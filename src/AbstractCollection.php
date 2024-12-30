@@ -23,6 +23,17 @@ abstract class AbstractCollection implements CollectionInterface, IteratorAggreg
         $this->collection = new SplObjectStorage();
     }
 
+    protected function setCollectionType(string $type):void
+    {
+        $this->meta->add('type', $type);
+    }
+
+    function getCollectionType(): string
+    {
+        return $this->meta->has('type') ? $this->meta->get('type') : '';
+    }
+
+
     protected function setMetaData(MetaDataKeys $key, mixed $value):void
     {
         $this->meta[$key] = $value;
@@ -52,18 +63,11 @@ abstract class AbstractCollection implements CollectionInterface, IteratorAggreg
     {
         if($items instanceof AbstractCollection) {
             $collection = $items->getAllItems();
-            if($collection instanceof SplObjectStorage) {
-                $this->collection->addAll($collection);
-                return;
-            }
-            if(is_array($collection)) {
-                $this->appendArray($collection);
-                return;
-            }
+            $this->appendArray($collection);
+            return;
         }
         if(is_array($items)) {
             $this->appendArray($items);
-            return;
         }
     }
 

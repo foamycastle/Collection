@@ -2,7 +2,9 @@
 
 namespace Foamycastle\Collection;
 
-abstract class AbstractItem implements ItemInterface
+use Exception;
+
+abstract class AbstractItem implements ItemInterface, \Serializable, \JsonSerializable
 {
     public function __construct(
         protected string $key,
@@ -44,6 +46,20 @@ abstract class AbstractItem implements ItemInterface
         $this->meta=$meta;
         return $this;
     }
+    public function __serialize(): array
+    {
+        return [
+            'key'=>$this->key,
+            'value'=>$this->value,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->key = ($data['key'] ?? '');
+        $this->value = ($data['value'] ?? '');
+    }
+
 
 
 }
